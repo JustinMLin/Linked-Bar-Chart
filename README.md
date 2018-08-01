@@ -7,13 +7,13 @@ var nodes = [
   {name: String, value: int},
   {name: String, value: int},
   ...
-]
+];
 
 var links = [
   {source: nodes.name, target: nodes.name, weight: int, id: 1},
   {source: nodes.name, target: nodes.name, weight: int, id: 1},
   ...
-]
+];
 
 
 Objects variables:
