@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>bar + connections</title>
+    <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+  </head>
+  <style>
+    .barChart {
+      position: absolute;
+      top: 50px;
+      left: 0px;
+    }
+
+    .curves {
+      position: absolute;
+      top: 750px;
+      left: 0px;
+    }
+  </style>
+  <body>
+      <svg class = "barChart"></svg>
+      <svg class = "curves"></svg>
+      <button type="button" onclick="sortPublications()">Sort by publications</button>
+      <button type="button" onclick="sortName()">Sort by name</button>
+  </body>
+
+  <script>
+    //Data
+    var nodes = [
+      {name: "ANTEBI, ADAM", publications: 1}, {name: "ANTONY, PAUL ANDREW", publications:  1},
+      {name: "ASHE, WARREN K.", publications:  1}, {name: "BAGNARA, JOSEPH T", publications:  1},
+      {name: "BARSH, GREGORY STEFAN", publications:  1}, {name: "BOISSY, RAYMOND E", publications:  5},
+      {name: "BOTTINI, NUNZIO", publications:  2}, {name: "BOWERS, ROGER R", publications:  4},
+      {name: "BRILLIANT, MURRAY H", publications:  1}, {name: "BYSTRYN, JEAN-CLAUDE", publications:  1},
+      {name: "CHAKRAVARTI, ARAVINDA", publications:  1}, {name: "COLLIER, ANNIEm", publications:  1},
+      {name: "CRAFT, NOAH A", publications:  2}, {name: "DOHENY, KIMBERLY", publications:  1},
+      {name: "DRAGER, URSULA CHARLOTTE", publications:  1}, {name: "DUNSTON, GEORGIA M", publications:  1},
+      {name: "ENGELHARD, VICTOR H", publications:  2}, {name: "ERF, GISELA F", publications:  2},
+      {name: "GANESAN, ANAND K", publications:  1}, {name: "GREGG, RANDAL", publications:  1},
+      {name: "HALABAN, RUTH", publications:  1}, {name: "HALDER, REBAT M", publications:  2},
+      {name: "HALLICK, LESLEY M", publications:  1}, {name: "HANEIN, DORIT", publications:  1},
+      {name: "HARRIS, JOHN E", publications:  2}, {name: "HARVEY, VALERIE M", publications:  1},
+      {name: "HASTINGS, KAREN TARASZKA", publications:  1}, {name: "HORNYAK, THOMAS J", publications:  2},
+      {name: "ITO, MAYUMI", publications:  2}, {name: "JORGENSEN, TRINE NORGAARD", publications:  1},
+      {name: "KING, RICHARD A", publications:  2}, {name: "KLAUSNER, MITCHELL", publications:  1},
+      {name: "LASKIN, JEFFREY D", publications:  1}, {name: "LE POOLE, ISABELLE CAROLINE", publications:  7},
+      {name: "LEACHMAN, SANCY ANN", publications:  1}, {name: "LERNER, AARON B", publications:  5},
+      {name: "LERNER, ETHAN A", publications:  1}, {name: "LEYDA, JAMES P", publications:  1},
+      {name: "LO, JENNIFER A", publications:  1}, {name: "MACLAREN, NOEL K", publications:  1},
+      {name: "MANGA, PRASHIELA", publications:  1}, {name: "MATHIS, DIANE J", publications:  1},
+      {name: "MCCORMACK, WAYNE T.", publications:  3}, {name: "MORELLI, JOSEPH G", publications:  3},
+      {name: "NATH, SWAPAN K", publications:  1}, {name: "NORRIS, DAVID A.", publications:  5},
+      {name: "ORLOW, SETH J.", publications:  4}, {name: "PANDYA, AMIT G", publications:  3},
+      {name: "PARICHY, DAVID M", publications:  1}, {name: "PATHAK, MADHUKAR A", publications:  1},
+      {name: "REED, JOHN C", publications:  1}, {name: "RODGERS, MARY", publications:  1},
+      {name: "SALZMAN, ANDREW LURIE", publications:  1}, {name: "SETALURI, VIJAYASARADHI", publications:  2},
+      {name: "SHAROV, ANDREY", publications:  1}, {name: "SHE, JIN-XIONG", publications:  1},
+      {name: "SIDMAN, RICHARD L", publications:  2}, {name: "SLOMINSKI, ANDRZEJ T", publications:  2},
+      {name: "SMART, JOSEPH A.", publications:  1}, {name: "SPRITZ, RICHARD A", publications:  9},
+      {name: "STANLEY, JOHN R", publications:  1}, {name: "SZABO, GEORGE", publications:  1},
+      {name: "TERZIAN, TAMARA G", publications:  1}, {name: "TURK, MARY J", publications:  1},
+      {name: "WHITE, RICHARD MARK", publications:  1}, {name: "WHITE, RICHARD MARK", publications:  1},
+      {name: "WITKOP, CARL J.", publications:  1}
+    ];
+
+    var links = [
+      {source: "ANTONY, PAUL ANDREW", target: "DOHENY, KIMBERLY", weight: 1, id: 1}, {source: "a", target: "c", weight: 1, id: 1},
+
+      {source: "ANTONY, PAUL ANDREW", target: "HORNYAK, THOMAS J", weight: 1, id: 2},
+
+      {source: "ASHE, WARREN K.", target: "DUNSTON, GEORGIA M", weight: 1, id: 3}, {source: "ASHE, WARREN K.", target: "HALDER, REBAT M", weight: 1, id: 3},
+      {source: "DUNSTON, GEORGIA M", target: "HALDER, REBAT M", weight: 1, id: 3},
+
+      {source: "BAGNARA, JOSEPH T", target: "HASTINGS, KAREN TARASZKA", weight: 1, id: 4},
+
+      {source: "BOISSY, RAYMOND E", target: "HALABAN, RUTH", weight: 1, id: 5}, {source: "BOISSY, RAYMOND E", target: "LERNER, AARON B", weight: 1, id: 5},
+      {source: "HALABAN, RUTH", target: "LERNER, AARON B", weight: 1, id: 5},
+
+      {source: "BOTTINI, NUNZIO", target: "RODGERS, MARY", weight: 1, id: 6},
+
+      {source: "BYSTRYN, JEAN-CLAUDE", target: "HORNYAK, THOMAS J", weight: 1, id: 7}, {source: "BYSTRYN, JEAN-CLAUDE", target: "ITO, MAYUMI", weight: 1, id: 7},
+      {source: "BYSTRYN, JEAN-CLAUDE", target: "MANGA, PRASHIELA", weight: 1, id: 7}, {source: "BYSTRYN, JEAN-CLAUDE", target: "ORLOW, SETH J.", weight: 1, id: 7},
+      {source: "HORNYAK, THOMAS J", target: "ITO, MAYUMI", weight: 1, id: 7}, {source: "HORNYAK, THOMAS J", target: "MANGA, PRASHIELA", weight: 1, id: 7},
+      {source: "HORNYAK, THOMAS J", target: "ORLOW, SETH J.", weight: 1, id: 7}, {source: "ITO, MAYUMI", target: "MANGA, PRASHIELA", weight: 1, id: 7},
+      {source: "ITO, MAYUMI", target: "ORLOW, SETH J.", weight: 1, id: 7}, {source: "MANGA, PRASHIELA", target: "ORLOW, SETH J.", weight: 1, id: 7},
+
+      {source: "ENGELHARD, VICTOR H", target: "GREGG, RANDAL", weight: 1, id: 8},
+
+      {source: "KING, RICHARD A", target: "WITKOP, CARL J.", weight: 1, id: 9},
+
+      {source: "LO, JENNIFER A", target: "MATHIS, DIANE J", weight: 1, id: 10}, {source: "LO, JENNIFER A", target: "PATHAK, MADHUKAR A", weight: 1, id: 10},
+      {source: "LO, JENNIFER A", target: "SIDMAN, RICHARD L", weight: 1, id: 10}, {source: "LO, JENNIFER A", target: "SZABO, GEORGE", weight: 1, id: 10},
+      {source: "MATHIS, DIANE J", target: "PATHAK, MADHUKAR A", weight: 1, id: 10}, {source: "MATHIS, DIANE J", target: "SIDMAN, RICHARD L", weight: 1, id: 10},
+      {source: "MATHIS, DIANE J", target: "SZABO, GEORGE", weight: 1, id: 10}, {source: "PATHAK, MADHUKAR A", target: "SIDMAN, RICHARD L", weight: 1, id: 10},
+      {source: "PATHAK, MADHUKAR A", target: "SZABO, GEORGE", weight: 1, id: 10}, {source: "SIDMAN, RICHARD L", target: "SZABO, GEORGE", weight: 1, id: 10},
+
+      {source: "MACLAREN, NOEL K", target: "MCCORMACK, WAYNE T.", weight: 1, id: 11},
+
+      {source: "MORELLI, JOSEPH G", target: "NORRIS, DAVID A.", weight: 1, id: 12}, {source: "MORELLI, JOSEPH G", target: "SPRITZ, RICHARD A", weight: 1, id: 12},
+      {source: "MORELLI, JOSEPH G", target: "TERZIAN, TAMARA G", weight: 1, id: 12}, {source: "NORRIS, DAVID A.", target: "SPRITZ, RICHARD A", weight: 1, id: 12},
+      {source: "NORRIS, DAVID A.", target: "TERZIAN, TAMARA G", weight: 1, id: 12}, {source: "SPRITZ, RICHARD A", target: "TERZIAN, TAMARA G", weight: 1, id: 12},
+    ];
+
+    //Constants
+    const padding = 5;
+    const barWidth = 30;
+    const numBars = nodes.length;
+    const leftPadding = 80;
+
+    const barColors = ["#1966B4", "#377DC3", "#5899D9", "#74ABE3"];
+    const linkColors = ["rgb(255, 0, 0)", "rgb(255, 117, 0)", "rgb(255, 203, 47)", "rgb(32, 130, 13)", "rgb(26, 52, 186)",
+                        "rgb(75, 14, 181)", "rgb(115, 11, 160)", "rgb(110, 110, 110)", "rgb(17, 184, 193)", "rgb(112, 54, 4)",
+                        "rgb(1, 181, 37)", "rgb(135, 2, 64)"];
+
+    //SVGs
+    var barChart = d3.select(".barChart")
+      .attr("height", 700)
+      .attr("width", leftPadding + numBars * (barWidth + padding));
+
+    var curves = d3.select(".curves")
+      .attr("height", 1100)
+      .attr("width", leftPadding + numBars * (barWidth + padding));
+
+    //Scales
+    var yScale = d3.scaleLinear()
+      .domain([0, d3.max(nodes, d=>d.publications)])
+      .range([0, 500]);
+
+    //axes
+    var yAxisScale = d3.scaleLinear().domain([0, d3.max(nodes, d=>d.publications)]).range([700, 0]);
+    var yAxis = d3.axisRight(yAxisScale)
+      .ticks(5)
+      .tickSize(nodes.length * (barWidth + padding) + 40);
+
+    function buildAxes() {
+      barChart.append("g")
+        .attr("transform", "translate(60, 0)")
+        .call(yAxis)
+        .selectAll(".tick:not(:first-of-type) line").attr("stroke", "#777").attr("stroke-dasharray", "2,2");
+    }
+
+    //Arcs
+    var arc = d3.arc()
+      .startAngle(Math.PI / 2)
+      .endAngle(Math.PI * 3 / 2);
+
+    function updateBarChart() {
+      //set axes
+      buildAxes();
+
+      //create bars
+      var bars = barChart.selectAll(".bar")
+        .data(nodes, d=>d);
+
+      bars.exit().remove();
+
+      bars.enter()
+        .append("rect")
+          .attr("class", "bar")
+          .attr("width", barWidth)
+          .attr("height", 0)
+          .attr("x", (d,i)=>leftPadding + i * (barWidth + padding))
+          .attr("y", 700)
+          .attr("fill", function(d) {
+            if (d.publications >= d3.max(nodes, d=>d.publications) * .8) return barColors[0];
+            if (d.publications >= d3.max(nodes, d=>d.publications) * .6) return barColors[1];
+            if (d.publications >= d3.max(nodes, d=>d.publications) * .4) return barColors[2];
+            if (d.publications >= d3.max(nodes, d=>d.publications) * .2) return barColors[3];
+            return "#B2D5F5";
+          })
+          .on("mouseover", function(d, i) {
+            d3.select(this)
+              .attr("fill", "orange");
+
+            barChart.append("text")
+              .text(d.publications)
+              .attr("class", "tempLabel")
+              .attr("fill", "white")
+              .attr("x", leftPadding + barWidth / 2 + i * (barWidth + padding) - 2)
+              .attr("y", 720 - yScale(d.publications));
+
+            for (var i = 0; i < links.length; i++) {
+              if (d.name == links[i].source || d.name == links[i].target) {
+                links[i].weight = 2;
+              }
+            }
+            drawCurves();
+          })
+          .on("mouseout", function() {
+            d3.select(this)
+              .attr("fill", function(d) {
+                if (d.publications >= d3.max(nodes, d=>d.publications) * .8) return barColors[0];
+                if (d.publications >= d3.max(nodes, d=>d.publications) * .6) return barColors[1];
+                if (d.publications >= d3.max(nodes, d=>d.publications) * .4) return barColors[2];
+                if (d.publications >= d3.max(nodes, d=>d.publications) * .2) return barColors[3];
+                return "#B2D5F5";
+              });
+
+            barChart.selectAll(".tempLabel").remove();
+
+            for (var i = 0; i < links.length; i++) {links[i].weight = 1;}
+            drawCurves();
+          })
+          .transition().duration(1000)
+            .attr("y", d=>700 - yScale(d.publications))
+            .attr("height", d=>yScale(d.publications));
+
+      //create labels
+      var labels = barChart.selectAll("text")
+        .data(nodes, d=>d);
+
+      labels.exit().remove();
+
+      labels.enter()
+        .append("text")
+          .text(d=>d.name)
+          .attr("transform", "rotate(270)")
+          .attr("x", -695)
+          .attr("y", (d,i)=>leftPadding + barWidth / 2 + i * (barWidth + padding) + 5)
+          .attr("fill", "black")
+          .transition().duration(1000)
+            .attr("x", d=>-695 + yScale(d.publications));
+
+      //create arcs
+      drawCurves();
+    }
+
+    function drawCurves() {
+      curves.selectAll(".curve").remove();
+
+      for (var i = 0; i < links.length; i++) {
+        var fromIndex = nodes.findIndex(function(element) {return element.name == links[i].source;});
+        var toIndex = nodes.findIndex(function(element) {return element.name == links[i].target;});
+        var middle = leftPadding + barWidth / 2 + (barWidth + padding) * ((fromIndex + toIndex) / 2);
+
+        var innerRadius = Math.abs(toIndex - fromIndex) * (padding + barWidth) / 2 - 2*links[i].weight;
+        var outerRadius = Math.abs(toIndex - fromIndex) * (padding + barWidth) / 2 + 2*links[i].weight;
+
+        var curve = curves.append("path")
+          .attr("class", "curve")
+          .attr("transform", "translate(" + middle + ", 0)")
+          .data([{startAngle: Math.PI / 2, endAngle: Math.PI / 2, innerRadius: innerRadius, outerRadius: outerRadius}])
+          .attr("fill", linkColors[links[i].id - 1])
+          .style("opacity", function() {
+            if (links[i].weight == 2) return 1;
+            else return 0.4;
+          })
+          .attr("d", arc);
+      }
+    }
+
+    function sortPublications() {
+      barChart.selectAll("*").remove();
+      curves.selectAll("*").remove();
+      nodes.sort(function(a,b) {return d3.descending(a.publications, b.publications);});
+      updateBarChart();
+    }
+
+    function sortName() {
+      barChart.selectAll("*").remove();
+      curves.selectAll("*").remove();
+      nodes.sort(function(a,b) {
+        var nameA = a.name.toLowerCase();
+        var nameB = b.name.toLowerCase();
+        return d3.ascending(nameA, nameB);
+      });
+      updateBarChart();
+    }
+
+    sortName();
+
+  </script>
+</html>
