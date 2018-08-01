@@ -182,12 +182,12 @@
 
             for (var i = 0; i < links.length; i++) {
               if (d.name == links[i].source || d.name == links[i].target) {
-                links[i].weight = 2;
+                links[i].weight++;
               }
             }
-            drawCurves();
+            drawCurvesBold(d);
           })
-          .on("mouseout", function() {
+          .on("mouseout", function(d, i) {
             d3.select(this)
               .attr("fill", function(d) {
                 if (d.publications >= d3.max(nodes, d=>d.publications) * .8) return barColors[0];
@@ -199,7 +199,11 @@
 
             barChart.selectAll(".tempLabel").remove();
 
-            for (var i = 0; i < links.length; i++) {links[i].weight = 1;}
+            for (var i = 0; i < links.length; i++) {
+              if (d.name == links[i].source || d.name == links[i].target) {
+                links[i].weight--;
+              }
+            }
             drawCurves();
           })
           .transition().duration(1000)
@@ -242,8 +246,29 @@
           .attr("transform", "translate(" + middle + ", 0)")
           .data([{startAngle: Math.PI / 2, endAngle: Math.PI / 2, innerRadius: innerRadius, outerRadius: outerRadius}])
           .attr("fill", linkColors[links[i].id - 1])
+          .style("opacity", 0.4)
+          .attr("d", arc);
+      }
+    }
+
+    function drawCurvesBold(bold) {
+      curves.selectAll(".curve").remove();
+
+      for (var i = 0; i < links.length; i++) {
+        var fromIndex = nodes.findIndex(function(element) {return element.name == links[i].source;});
+        var toIndex = nodes.findIndex(function(element) {return element.name == links[i].target;});
+        var middle = leftPadding + barWidth / 2 + (barWidth + padding) * ((fromIndex + toIndex) / 2);
+
+        var innerRadius = Math.abs(toIndex - fromIndex) * (padding + barWidth) / 2 - 2*links[i].weight;
+        var outerRadius = Math.abs(toIndex - fromIndex) * (padding + barWidth) / 2 + 2*links[i].weight;
+
+        var curve = curves.append("path")
+          .attr("class", "curve")
+          .attr("transform", "translate(" + middle + ", 0)")
+          .data([{startAngle: Math.PI / 2, endAngle: Math.PI / 2, innerRadius: innerRadius, outerRadius: outerRadius}])
+          .attr("fill", linkColors[links[i].id - 1])
           .style("opacity", function() {
-            if (links[i].weight == 2) return 1;
+            if (links[i].target == bold.name || links[i].source == bold.name) return 1;
             else return 0.4;
           })
           .attr("d", arc);
