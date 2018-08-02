@@ -33,11 +33,20 @@
                         "rgb(75, 14, 181)", "rgb(115, 11, 160)", "rgb(110, 110, 110)", "rgb(17, 184, 193)", "rgb(112, 54, 4)",
                         "rgb(1, 181, 37)", "rgb(135, 2, 64)"];
 
+    //sets arcs to be half circles
     var arc = d3.arc()
       .startAngle(Math.PI / 2)
       .endAngle(Math.PI * 3 / 2);
 
-    var barChart, curves, yScale, yAxisScale, yAxis;
+    /*
+      init(nodes)
+        - sets an SVG for the bar chart and an SVG for the connections below it
+        - creates scales for the bar heights and y-axis based on the nodes data
+          - intentionally set so the bar with the greatest height does not reach the top of the graph
+            - leaves room for the name
+        - creates the y-axis
+    */
+    var barChart, curves, yScale, yAxisScale, yAxis, oldColor;
     function init(nodes) {
       barChart = d3.select(".barChart")
         .attr("height", 800)
@@ -61,6 +70,16 @@
         .selectAll(".tick:not(:first-of-type) line").attr("stroke", "#777").attr("stroke-dasharray", "2,2");
     }
 
+    /*
+      updateBarChart(nodes, links)
+        - creates the actual bars
+          - colored based on value
+        - on mouseover the bar turns orange, a label showing the value is created, and the associated links are empasized
+          - for each associated link, a new curve that is wider and opaque is drawn over the existing curves
+        - on mouseout, the new wider/opaque curves are removed, the bar is returned to its original color, and the value label is removed
+        - creates label above the bars for node names
+        - adds transitions for he bars and labels
+    */
     function updateBarChart(nodes, links) {
       var bars = barChart.selectAll(".bar")
         .data(nodes, d=>d);
@@ -83,6 +102,8 @@
             return barColors[5];
           })
           .on("mouseover", function(d, i) {
+            oldColor = d3.select(this).attr("fill");
+
             d3.select(this)
               .attr("fill", "orange");
 
@@ -90,21 +111,14 @@
               .text(d.publications)
               .attr("class", "tempLabel")
               .attr("fill", "white")
-              .attr("x", leftPadding + barWidth / 2 + i * (barWidth + padding) - 2)
+              .attr("x", leftPadding + barWidth / 2 + i * (barWidth + padding) - 4)
               .attr("y", 740 - yScale(d.publications));
 
             drawBoldCurve(nodes, links, d);
           })
           .on("mouseout", function(d, i) {
             d3.select(this)
-              .attr("fill", function(d) {
-                if (d.publications >= d3.max(nodes, d=>d.publications) * 5 / 6) return barColors[0];
-                if (d.publications >= d3.max(nodes, d=>d.publications) * 4 / 6) return barColors[1];
-                if (d.publications >= d3.max(nodes, d=>d.publications) * 3 / 6) return barColors[2];
-                if (d.publications >= d3.max(nodes, d=>d.publications) * 2 / 6) return barColors[3];
-                if (d.publications >= d3.max(nodes, d=>d.publications) * 1 / 6) return barColors[4];
-                return barColors[5];
-              });
+              .attr("fill", oldColor);
 
             barChart.selectAll(".tempLabel").remove();
 
@@ -135,6 +149,11 @@
       drawCurves(nodes, links);
     }
 
+    /*
+      drawCurves(nodes, links)
+        - draws all of the connections under the bar chart
+        - each curve is 4 times the weight of the link
+`   */
     function drawCurves(nodes, links) {
       for (var i = 0; i < links.length; i++) {
         var fromIndex = nodes.findIndex(function(element) {return element.name == links[i].source;});
@@ -154,6 +173,11 @@
       }
     }
 
+    /*
+      drawBoldCurve(nodes, links, bold)
+        - draws all of the links connected to the node, "bold"
+          - completely opaque 4 pixels wider than the original curve being drawn over
+    */
     function drawBoldCurve(nodes, links, bold) {
       for (var i = 0; i < links.length; i++) {
         if (links[i].source == bold.name || links[i].target == bold.name) {
@@ -174,6 +198,10 @@
       }
     }
 
+    /*
+      clearSVG()
+        - clears both SVGs (bar chart and curves)
+    */
     function clearSVG() {
       barChart.selectAll(".bar").remove();
       barChart.selectAll(".label").remove();
@@ -181,6 +209,12 @@
       curves.selectAll(".boldCurve").remove();
     }
 
+    /*
+      sortPublications()
+        - reads data from csv files
+        - sorts nodes by number of publications (decreasing)
+        - clears the SVGs and calls updateBarChart(nodes, links)
+    */
     function sortPublications() {
       d3.csv("nodes.csv")
         .then(function(data1) {
@@ -197,6 +231,12 @@
         });
     }
 
+    /*
+      sortName()
+        - reads data from csv files
+        - sorts nodes by name (alphabetically)
+        - clears the SVGs and calls updateBarChart(nodes, links)
+    */
     function sortName() {
       d3.csv("nodes.csv")
         .then(function(data1) {
@@ -217,6 +257,7 @@
         });
     }
 
+    //initiates reading data from the csv files and builds the graph
     d3.csv("nodes.csv")
       .then(function(data1) {
         d3.csv("links.csv")
