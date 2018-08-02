@@ -33,7 +33,7 @@
       {name: "BARSH, GREGORY STEFAN", publications:  1}, {name: "BOISSY, RAYMOND E", publications:  5},
       {name: "BOTTINI, NUNZIO", publications:  2}, {name: "BOWERS, ROGER R", publications:  4},
       {name: "BRILLIANT, MURRAY H", publications:  1}, {name: "BYSTRYN, JEAN-CLAUDE", publications:  1},
-      {name: "CHAKRAVARTI, ARAVINDA", publications:  1}, {name: "COLLIER, ANNIEm", publications:  1},
+      {name: "CHAKRAVARTI, ARAVINDA", publications:  1}, {name: "COLLIER, ANNIE", publications:  1},
       {name: "CRAFT, NOAH A", publications:  2}, {name: "DOHENY, KIMBERLY", publications:  1},
       {name: "DRAGER, URSULA CHARLOTTE", publications:  1}, {name: "DUNSTON, GEORGIA M", publications:  1},
       {name: "ENGELHARD, VICTOR H", publications:  2}, {name: "ERF, GISELA F", publications:  2},
@@ -60,8 +60,7 @@
       {name: "SMART, JOSEPH A.", publications:  1}, {name: "SPRITZ, RICHARD A", publications:  9},
       {name: "STANLEY, JOHN R", publications:  1}, {name: "SZABO, GEORGE", publications:  1},
       {name: "TERZIAN, TAMARA G", publications:  1}, {name: "TURK, MARY J", publications:  1},
-      {name: "WHITE, RICHARD MARK", publications:  1}, {name: "WHITE, RICHARD MARK", publications:  1},
-      {name: "WITKOP, CARL J.", publications:  1}
+      {name: "WHITE, RICHARD MARK", publications:  1}, {name: "WITKOP, CARL J.", publications:  1}
     ];
 
     var links = [
@@ -131,7 +130,7 @@
     var yAxisScale = d3.scaleLinear().domain([0, d3.max(nodes, d=>d.publications)]).range([700, 0]);
     var yAxis = d3.axisRight(yAxisScale)
       .ticks(5)
-      .tickSize(nodes.length * (barWidth + padding) + 40);
+      .tickSize(numBars * (barWidth + padding) + 40);
 
     function buildAxes() {
       barChart.append("g")
