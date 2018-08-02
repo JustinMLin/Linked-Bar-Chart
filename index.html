@@ -2,27 +2,24 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>bars + connections</title>
+    <title>Linked Bar Chart</title>
     <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
   </head>
   <style>
-    .barChart {
-      position: absolute;
-      top: 50px;
-      left: 0px;
-    }
-
     .curves {
-      position: absolute;
-      top: 750px;
-      left: 0px;
+      position: relative;
+      top: -84.5px;
     }
   </style>
   <body>
-      <svg class = "barChart"></svg>
-      <svg class = "curves"></svg>
-      <button type="button" onclick="sortPublications()">Sort by publications</button>
-      <button type="button" onclick="sortName()">Sort by name</button>
+      <div>
+        <button type="button" onclick="sortPublications()">Sort by publications</button>
+        <button type="button" onclick="sortName()">Sort by name</button>
+      </div>
+      <div>
+        <svg class = "barChart"></svg>
+        <svg class = "curves"></svg>
+      </div>
   </body>
 
   <script>
@@ -31,7 +28,7 @@
     const barWidth = 30;
     const leftPadding = 80;
 
-    const barColors = ["#1966B4", "#377DC3", "#5899D9", "#74ABE3"];
+    const barColors = ["#1966B4", "#377DC3", "#5899D9", "#74ABE3", "#93C0EA", "#B2D5F5"];
     const linkColors = ["rgb(255, 0, 0)", "rgb(255, 117, 0)", "rgb(255, 203, 47)", "rgb(32, 130, 13)", "rgb(26, 52, 186)",
                         "rgb(75, 14, 181)", "rgb(115, 11, 160)", "rgb(110, 110, 110)", "rgb(17, 184, 193)", "rgb(112, 54, 4)",
                         "rgb(1, 181, 37)", "rgb(135, 2, 64)"];
@@ -43,27 +40,25 @@
     var barChart, curves, yScale, yAxisScale, yAxis;
     function init(nodes) {
       barChart = d3.select(".barChart")
-        .attr("height", 700)
-        .attr("width", leftPadding + nodes.length * (barWidth + padding));
+        .attr("height", 800)
+        .attr("width", leftPadding + nodes.length * (barWidth + padding) + 50);
 
       curves = d3.select(".curves")
-        .attr("height", 1100)
+        .attr("height", 900)
         .attr("width", leftPadding + nodes.length * (barWidth + padding));
 
       yScale = d3.scaleLinear()
-        .domain([0, d3.max(nodes, d=>d.publications)])
-        .range([0, 500]);
+        .domain([0, d3.max(nodes, d=>Math.round(1.3 * d.publications))])
+        .range([0, 700]);
 
-      yAxisScale = d3.scaleLinear().domain([0, d3.max(nodes, d=>d.publications)]).range([700, 0]);
-      yAxis = d3.axisRight(yAxisScale)
-        .ticks(5)
-        .tickSize(nodes.length * (barWidth + padding) + 40);
+      yAxisScale = d3.scaleLinear().domain([0, d3.max(nodes, d=>Math.round(1.3 * d.publications))]).range([700, 0]);
+      yAxis = d3.axisLeft(yAxisScale)
+        .tickSize(nodes.length * (barWidth + padding) + 40)
+        .tickPadding(10);
       barChart.append("g")
-        .attr("transform", "translate(60, 0)")
+        .attr("transform", "translate(2400, 20)")
         .call(yAxis)
         .selectAll(".tick:not(:first-of-type) line").attr("stroke", "#777").attr("stroke-dasharray", "2,2");
-
-
     }
 
     function updateBarChart(nodes, links) {
@@ -78,13 +73,14 @@
           .attr("width", barWidth)
           .attr("height", 0)
           .attr("x", (d,i)=>leftPadding + i * (barWidth + padding))
-          .attr("y", 700)
+          .attr("y", 720)
           .attr("fill", function(d) {
-            if (d.publications >= d3.max(nodes, d=>d.publications) * .8) return barColors[0];
-            if (d.publications >= d3.max(nodes, d=>d.publications) * .6) return barColors[1];
-            if (d.publications >= d3.max(nodes, d=>d.publications) * .4) return barColors[2];
-            if (d.publications >= d3.max(nodes, d=>d.publications) * .2) return barColors[3];
-            return "#B2D5F5";
+            if (d.publications >= d3.max(nodes, d=>d.publications) * 5 / 6) return barColors[0];
+            if (d.publications >= d3.max(nodes, d=>d.publications) * 4 / 6) return barColors[1];
+            if (d.publications >= d3.max(nodes, d=>d.publications) * 3 / 6) return barColors[2];
+            if (d.publications >= d3.max(nodes, d=>d.publications) * 2 / 6) return barColors[3];
+            if (d.publications >= d3.max(nodes, d=>d.publications) * 1 / 6) return barColors[4];
+            return barColors[5];
           })
           .on("mouseover", function(d, i) {
             d3.select(this)
@@ -95,36 +91,27 @@
               .attr("class", "tempLabel")
               .attr("fill", "white")
               .attr("x", leftPadding + barWidth / 2 + i * (barWidth + padding) - 2)
-              .attr("y", 720 - yScale(d.publications));
+              .attr("y", 740 - yScale(d.publications));
 
-            for (var i = 0; i < links.length; i++) {
-              if (d.name == links[i].source || d.name == links[i].target) {
-                links[i].weight++;
-              }
-            }
-            drawCurves(nodes, links, d);
+            drawBoldCurve(nodes, links, d);
           })
           .on("mouseout", function(d, i) {
             d3.select(this)
               .attr("fill", function(d) {
-                if (d.publications >= d3.max(nodes, d=>d.publications) * .8) return barColors[0];
-                if (d.publications >= d3.max(nodes, d=>d.publications) * .6) return barColors[1];
-                if (d.publications >= d3.max(nodes, d=>d.publications) * .4) return barColors[2];
-                if (d.publications >= d3.max(nodes, d=>d.publications) * .2) return barColors[3];
-                return "#B2D5F5";
+                if (d.publications >= d3.max(nodes, d=>d.publications) * 5 / 6) return barColors[0];
+                if (d.publications >= d3.max(nodes, d=>d.publications) * 4 / 6) return barColors[1];
+                if (d.publications >= d3.max(nodes, d=>d.publications) * 3 / 6) return barColors[2];
+                if (d.publications >= d3.max(nodes, d=>d.publications) * 2 / 6) return barColors[3];
+                if (d.publications >= d3.max(nodes, d=>d.publications) * 1 / 6) return barColors[4];
+                return barColors[5];
               });
 
             barChart.selectAll(".tempLabel").remove();
 
-            for (var i = 0; i < links.length; i++) {
-              if (d.name == links[i].source || d.name == links[i].target) {
-                links[i].weight--;
-              }
-            }
-            drawCurves(nodes, links);
+            curves.selectAll(".boldCurve").remove();
           })
           .transition().duration(1000)
-            .attr("y", d=>700 - yScale(d.publications))
+            .attr("y", d=>720 - yScale(d.publications))
             .attr("height", d=>yScale(d.publications));
 
       //create labels
@@ -138,53 +125,51 @@
           .text(d=>d.name)
           .attr("class", "label")
           .attr("transform", "rotate(270)")
-          .attr("x", -695)
+          .attr("x", -715)
           .attr("y", (d,i)=>leftPadding + barWidth / 2 + i * (barWidth + padding) + 5)
           .attr("fill", "black")
           .transition().duration(1000)
-            .attr("x", d=>-695 + yScale(d.publications));
+            .attr("x", d=>-715 + yScale(d.publications));
 
       //create arcs
       drawCurves(nodes, links);
     }
 
-    function drawCurves(nodes, links, bold) {
-      curves.selectAll(".curve").remove();
+    function drawCurves(nodes, links) {
+      for (var i = 0; i < links.length; i++) {
+        var fromIndex = nodes.findIndex(function(element) {return element.name == links[i].source;});
+        var toIndex = nodes.findIndex(function(element) {return element.name == links[i].target;});
+        var middle = leftPadding + barWidth / 2 + (barWidth + padding) * ((fromIndex + toIndex) / 2);
 
-      if (bold == undefined) {
-        for (var i = 0; i < links.length; i++) {
+        var innerRadius = Math.abs(toIndex - fromIndex) * (padding + barWidth) / 2 - 2*links[i].weight;
+        var outerRadius = Math.abs(toIndex - fromIndex) * (padding + barWidth) / 2 + 2*links[i].weight;
+
+        var curve = curves.append("path")
+          .attr("class", "curve")
+          .attr("transform", "translate(" + middle + ", 0)")
+          .data([{startAngle: Math.PI / 2, endAngle: Math.PI / 2, innerRadius: innerRadius, outerRadius: outerRadius}])
+          .attr("fill", linkColors[links[i].id - 1])
+          .style("opacity", 0.4)
+          .attr("d", arc);
+      }
+    }
+
+    function drawBoldCurve(nodes, links, bold) {
+      for (var i = 0; i < links.length; i++) {
+        if (links[i].source == bold.name || links[i].target == bold.name) {
           var fromIndex = nodes.findIndex(function(element) {return element.name == links[i].source;});
           var toIndex = nodes.findIndex(function(element) {return element.name == links[i].target;});
           var middle = leftPadding + barWidth / 2 + (barWidth + padding) * ((fromIndex + toIndex) / 2);
 
-          var innerRadius = Math.abs(toIndex - fromIndex) * (padding + barWidth) / 2 - 2*links[i].weight;
-          var outerRadius = Math.abs(toIndex - fromIndex) * (padding + barWidth) / 2 + 2*links[i].weight;
+          var innerRadius = Math.abs(toIndex - fromIndex) * (padding + barWidth) / 2 - 2*links[i].weight-2;
+          var outerRadius = Math.abs(toIndex - fromIndex) * (padding + barWidth) / 2 + 2*links[i].weight+2;
 
           var curve = curves.append("path")
-            .attr("class", "curve")
+            .attr("class", "boldCurve")
             .attr("transform", "translate(" + middle + ", 0)")
             .data([{startAngle: Math.PI / 2, endAngle: Math.PI / 2, innerRadius: innerRadius, outerRadius: outerRadius}])
             .attr("fill", linkColors[links[i].id - 1])
-            .style("opacity", 0.4)
             .attr("d", arc);
-        }
-      } else {
-        for (var i = 0; i < links.length; i++) {
-          if (links[i].source == bold.name || links[i].target == bold.name) {
-            var fromIndex = nodes.findIndex(function(element) {return element.name == links[i].source;});
-            var toIndex = nodes.findIndex(function(element) {return element.name == links[i].target;});
-            var middle = leftPadding + barWidth / 2 + (barWidth + padding) * ((fromIndex + toIndex) / 2);
-
-            var innerRadius = Math.abs(toIndex - fromIndex) * (padding + barWidth) / 2 - 2*links[i].weight;
-            var outerRadius = Math.abs(toIndex - fromIndex) * (padding + barWidth) / 2 + 2*links[i].weight;
-
-            var curve = curves.append("path")
-              .attr("class", "curve")
-              .attr("transform", "translate(" + middle + ", 0)")
-              .data([{startAngle: Math.PI / 2, endAngle: Math.PI / 2, innerRadius: innerRadius, outerRadius: outerRadius}])
-              .attr("fill", linkColors[links[i].id - 1])
-              .attr("d", arc);
-          }
         }
       }
     }
@@ -193,6 +178,7 @@
       barChart.selectAll(".bar").remove();
       barChart.selectAll(".label").remove();
       curves.selectAll(".curve").remove();
+      curves.selectAll(".boldCurve").remove();
     }
 
     function sortPublications() {
