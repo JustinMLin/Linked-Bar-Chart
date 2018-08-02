@@ -10,11 +10,17 @@
       position: relative;
       top: -84.5px;
     }
+
+    .sortButton {
+      font-size: 18px;
+      width: 200px;
+    }
   </style>
   <body>
       <div>
-        <button type="button" onclick="sortPublications()">Sort by publications</button>
-        <button type="button" onclick="sortName()">Sort by name</button>
+        <button type="button" class="sortButton" onclick="sortPublications()">Sort by publications</button>
+        <button type="button" class="sortButton" onclick="sortName()">Sort by name</button>
+        <button type="button" class="sortButton" onclick="sortLink()">Sort by links</button>
       </div>
       <div>
         <svg class = "barChart"></svg>
@@ -53,7 +59,7 @@
         .attr("width", leftPadding + nodes.length * (barWidth + padding) + 50);
 
       curves = d3.select(".curves")
-        .attr("height", 900)
+        .attr("height", 1100)
         .attr("width", leftPadding + nodes.length * (barWidth + padding));
 
       yScale = d3.scaleLinear()
@@ -250,6 +256,36 @@
                 var nameB = b.name.toLowerCase();
                 return d3.ascending(nameA, nameB);
               });
+
+              clearSVG();
+              updateBarChart(nodes, links);
+            });
+        });
+    }
+
+    /*
+      sortLink()
+        - reads data from csv files
+        - sorts nodes by number of links (decreasing)
+        - clears the SVGs and calls updateBarChart(nodes, links)
+    */
+    function sortLink() {
+      d3.csv("nodes.csv")
+        .then(function(data1) {
+          d3.csv("links.csv")
+            .then(function(data2) {
+              var nodes = data1;
+              var links = data2;
+
+              for(var i = 0; i < nodes.length; i++) {
+                var count = 0;
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].source == nodes[i].name || links[j].target == nodes[i].name) count++;
+                }
+                nodes[i].connections = count;
+              }
+
+              nodes.sort(function(a,b) {return d3.descending(a.connections, b.connections);});
 
               clearSVG();
               updateBarChart(nodes, links);
