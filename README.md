@@ -15,6 +15,8 @@ var links = [
   ...
 ];
 
+*Check nodes.csv and links.csv for sample data
+
 
 Objects variables:
 nodes.name - refers to the name of each node, used for creating links
