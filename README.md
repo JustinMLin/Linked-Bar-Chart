@@ -10,8 +10,8 @@ var nodes = [
 ];
 
 var links = [
-  {source: nodes.name, target: nodes.name, weight: int, id: 1},
-  {source: nodes.name, target: nodes.name, weight: int, id: 1},
+  {source: nodes.name, target: nodes.name, weight: int, id: int},
+  {source: nodes.name, target: nodes.name, weight: int, id: int},
   ...
 ];
 
@@ -22,3 +22,7 @@ nodes.value - refers to the value of each node, used for constructing the bar ch
 links.source, links.target - nodes for each link
 links.weight - used for the stroke weight of each link
 id - used for the color of the links
+
+Sort by value - sorts bars by value descending
+Sort by name - sorts bars in alphabetical order
+Sort by links - sorts bars by number of links descending
