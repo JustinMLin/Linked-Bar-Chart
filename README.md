@@ -28,3 +28,5 @@ id - used for the color of the links
 Sort by value - sorts bars by value descending
 Sort by name - sorts bars in alphabetical order
 Sort by links - sorts bars by number of links descending
+
+Host: https://justinmlin.github.io/Linked-Bar-Chart/
